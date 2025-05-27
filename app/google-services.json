@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "373029152076",
+    "project_id": "readingbooks-8f4cd",
+    "storage_bucket": "readingbooks-8f4cd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373029152076:android:88241253b4f850c492dbe9",
+        "android_client_info": {
+          "package_name": "com.example.readingbooks"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCTVlUDgZdPk6tFNCcRWCNy1kSvZh11-k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
