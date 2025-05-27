@@ -23,6 +23,9 @@ import retrofit2.Response
 class MainActivity : AppCompatActivity() {
 
     private lateinit var viewModel: BookViewModel
+    private lateinit var btnSearch: Button
+    private lateinit var editSearch: EditText
+    private lateinit var recycler: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,12 +33,12 @@ class MainActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[BookViewModel::class.java]
 
-        val recycler = findViewById<RecyclerView>(R.id.recyclerBooks)
+        btnSearch = findViewById(R.id.btnSearch)
+        editSearch = findViewById(R.id.editSearch)
+        recycler = findViewById(R.id.recyclerBooks)
         recycler.layoutManager = LinearLayoutManager(this)
 
-        val btnSearch = findViewById<Button>(R.id.btnSearch)
-        val editSearch = findViewById<EditText>(R.id.editSearch)
-
+        // 이후 코드 동일
         btnSearch.setOnClickListener {
             val query = editSearch.text.toString()
             if (query.isNotBlank()) {
@@ -43,9 +46,12 @@ class MainActivity : AppCompatActivity() {
                 viewModel.searchBook(query)
             }
         }
+
+        // 🔍 검색 결과가 있으면 검색 목록으로 교체
         viewModel.searchResults.observe(this) { bookDocs ->
             val adapter = SearchResultAdapter(bookDocs) { selectedBook ->
                 Log.d("SEARCH_CLICK", "선택한 책: ${selectedBook.title}")
+                saveBookToSupabase(selectedBook)
             }
             recycler.adapter = adapter
         }
@@ -75,6 +81,7 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         Log.e("SUPABASE", "❌ 저장 실패: ${response.code()}")
                     }
+
                 }
 
                 override fun onFailure(call: Call<Void>, t: Throwable) {

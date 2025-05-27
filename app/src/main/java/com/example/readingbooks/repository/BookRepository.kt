@@ -11,7 +11,10 @@ import com.example.readingbooks.data.api.SupabaseClient
 
 object BookRepository {
 
-    fun getBooksFromSupabase(onResult: (List<Book>) -> Unit, onError: (Throwable) -> Unit) {
+    fun getBooksFromSupabase(
+        onResult: (List<Book>) -> Unit,
+        onError: (Throwable) -> Unit
+    ) {
         val user = FirebaseAuth.getInstance().currentUser ?: return
 
         user.getIdToken(true).addOnSuccessListener { result ->
@@ -23,7 +26,7 @@ object BookRepository {
                     if (response.isSuccessful) {
                         onResult(response.body() ?: emptyList())
                     } else {
-                        onError(Exception("조회 실패: ${response.code()}"))
+                        onError(Exception("불러오기 실패: ${response.code()}"))
                     }
                 }
 
@@ -33,4 +36,5 @@ object BookRepository {
             })
         }
     }
+
 }

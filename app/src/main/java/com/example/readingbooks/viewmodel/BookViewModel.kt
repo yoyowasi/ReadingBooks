@@ -18,6 +18,16 @@ class BookViewModel : ViewModel() {
 
     val searchResults = MutableLiveData<List<BookDocument>>() // ✅ 이것만 남기세요
 
+    val myBooks = MutableLiveData<List<Book>>()
+
+    fun fetchMyBooks() {
+        BookRepository.getBooksFromSupabase(
+            onResult = { myBooks.value = it },
+            onError = { Log.e("BookViewModel", "내 서재 불러오기 오류: ${it.message}") }
+        )
+    }
+
+
     fun searchBook(query: String) {
         RetrofitInstance.api.searchBooks(query).enqueue(object : Callback<BookSearchResponse> {
             override fun onResponse(
