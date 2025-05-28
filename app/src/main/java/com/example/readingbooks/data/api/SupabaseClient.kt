@@ -10,7 +10,7 @@ object SupabaseClient {
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
                     .addHeader("apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0dHpraGdzcGJxeW1ucWVpbG16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4MjUxMDAsImV4cCI6MjA2MzQwMTEwMH0.ja0kpDNzDp7_s5fZ2idTc-_EspIxUtJpk4-TG2TgApE")
-                    .addHeader("Authorization", "Bearer $idToken")
+                    .addHeader("Authorization", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0dHpraGdzcGJxeW1ucWVpbG16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4MjUxMDAsImV4cCI6MjA2MzQwMTEwMH0.ja0kpDNzDp7_s5fZ2idTc-_EspIxUtJpk4-TG2TgApE")
                     .addHeader("Content-Type", "application/json")
                     .build()
                 chain.proceed(request)
