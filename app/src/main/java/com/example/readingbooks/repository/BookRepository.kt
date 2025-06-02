@@ -19,7 +19,7 @@ object BookRepository {
 
         user.getIdToken(true).addOnSuccessListener { result ->
             val token = result.token ?: return@addOnSuccessListener
-            val client = SupabaseClient.create(token)
+            val client = SupabaseClient.create()
 
             client.getBooks().enqueue(object : Callback<List<Book>> {
                 override fun onResponse(call: Call<List<Book>>, response: Response<List<Book>>) {
