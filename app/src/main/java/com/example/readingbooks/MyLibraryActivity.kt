@@ -7,22 +7,20 @@ import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.readingbooks.adapter.BookAdapter
-import com.example.readingbooks.data.Book
+import com.example.readingbooks.adapter.UserBookAdapter
+import com.example.readingbooks.data.UserBook
 import com.example.readingbooks.data.api.SupabaseClient
 import com.google.firebase.auth.FirebaseAuth
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import com.example.readingbooks.data.api.SupabaseApi
-
 
 class MyLibraryActivity : AppCompatActivity() {
 
     private lateinit var recycler: RecyclerView
     private lateinit var btnLogout: Button
-    private lateinit var adapter: BookAdapter
-    private val bookList = mutableListOf<Book>()
+    private lateinit var adapter: UserBookAdapter
+    private val userBookList = mutableListOf<UserBook>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,11 +29,10 @@ class MyLibraryActivity : AppCompatActivity() {
         recycler = findViewById(R.id.recyclerMyBooks)
         btnLogout = findViewById(R.id.btnLogout)
 
-        adapter = BookAdapter(bookList)
+        adapter = UserBookAdapter(userBookList)
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = adapter
 
-        // 로그아웃 버튼 동작
         btnLogout.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             val intent = Intent(this, LoginActivity::class.java)
@@ -44,34 +41,30 @@ class MyLibraryActivity : AppCompatActivity() {
             finish()
         }
 
-        // 저장한 책 불러오기
         fetchBooks()
     }
 
     private fun fetchBooks() {
-        val user = FirebaseAuth.getInstance().currentUser ?: return
-        user.getIdToken(true).addOnSuccessListener { result ->
-            val token = result.token ?: return@addOnSuccessListener
-            val client = SupabaseClient.create()
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-            client.getMyBooks(user.uid).enqueue(object : Callback<List<Book>> {
-                override fun onResponse(
-                    call: Call<List<Book>>,
-                    response: Response<List<Book>>
-                ) {
+        SupabaseClient.create().getUserBooksByUserId("eq.$uid")
+            .enqueue(object : Callback<List<UserBook>> {
+                override fun onResponse(call: Call<List<UserBook>>, response: Response<List<UserBook>>) {
                     if (response.isSuccessful) {
-                        bookList.clear()
-                        bookList.addAll(response.body() ?: emptyList())
+                        val books = response.body() ?: emptyList()
+                        Log.d("✅SUPABASE", "${books.size}권 불러옴")
+
+                        userBookList.clear()
+                        userBookList.addAll(books)
                         adapter.notifyDataSetChanged()
                     } else {
-                        Log.e("SUPABASE", "❌ 책 불러오기 실패: ${response.code()}")
+                        Log.e("❌SUPABASE", "불러오기 실패: ${response.code()} ${response.errorBody()?.string()}")
                     }
                 }
 
-                override fun onFailure(call: Call<List<Book>>, t: Throwable) {
-                    Log.e("SUPABASE", "❌ 네트워크 오류: ${t.message}")
+                override fun onFailure(call: Call<List<UserBook>>, t: Throwable) {
+                    Log.e("❌SUPABASE", "네트워크 오류: ${t.message}")
                 }
             })
-        }
     }
 }

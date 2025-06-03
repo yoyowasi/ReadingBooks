@@ -5,18 +5,22 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:gravity="center"
+    android:fitsSystemWindows="true"
+    >
     <EditText
         android:id="@+id/editEmail"
         android:hint="이메일"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="50dp"
+        />
     <EditText
         android:hint="비밀번호"
         android:id="@+id/editPassword"
         android:inputType="textPassword"
         android:layout_width="match_parent"
-        android:layout_height="100dp"/>
+        android:layout_height="50dp"/>
     <Button
         android:id="@+id/btnLogin"
         android:text="로그인"

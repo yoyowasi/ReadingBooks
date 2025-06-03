@@ -1,5 +1,6 @@
 package com.example.readingbooks
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -10,6 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.readingbooks.adapter.SearchResultAdapter
 import com.example.readingbooks.data.Book
+import com.example.readingbooks.data.BookInsertRequest
+import com.example.readingbooks.data.UserBookInsertRequest
 import com.example.readingbooks.data.api.SupabaseClient
 import com.example.readingbooks.data.model.BookDocument
 import com.example.readingbooks.viewmodel.BookViewModel
@@ -25,20 +28,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var editSearch: EditText
     private lateinit var recycler: RecyclerView
     private lateinit var btnLogout: Button
+    private lateinit var btnMyBooks: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         viewModel = ViewModelProvider(this)[BookViewModel::class.java]
-
         btnSearch = findViewById(R.id.btnSearch)
         editSearch = findViewById(R.id.editSearch)
         recycler = findViewById(R.id.recyclerBooks)
         btnLogout = findViewById(R.id.btnLogout)
+        btnMyBooks = findViewById(R.id.btnMyBooks)
 
         recycler.layoutManager = LinearLayoutManager(this)
 
+        // 검색 버튼 클릭 시 ViewModel을 통해 책 검색
         btnSearch.setOnClickListener {
             val query = editSearch.text.toString()
             if (query.isNotBlank()) {
@@ -47,6 +52,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // 내 서재 화면으로 이동
+        btnMyBooks.setOnClickListener {
+            val intent = Intent(this, MyLibraryActivity::class.java)
+            startActivity(intent)
+        }
+
+        // 검색 결과가 변경될 때마다 RecyclerView 업데이트
         viewModel.searchResults.observe(this) { bookDocs ->
             val adapter = SearchResultAdapter(bookDocs) { selectedBook ->
                 Log.d("SEARCH_CLICK", "선택한 책: ${selectedBook.title}")
@@ -55,13 +67,9 @@ class MainActivity : AppCompatActivity() {
             recycler.adapter = adapter
         }
 
-        btnLogout.setOnClickListener {
-            FirebaseAuth.getInstance().signOut()
-            Log.d("FIREBASE", "🚪 로그아웃됨")
-            finish()
-        }
     }
 
+    // Supabase에 책 정보 저장
     private fun saveBookToSupabase(selectedBook: BookDocument) {
         val user = FirebaseAuth.getInstance().currentUser ?: run {
             Log.e("SUPABASE", "❌ 로그인된 사용자 없음")
@@ -75,41 +83,51 @@ class MainActivity : AppCompatActivity() {
             .replace("(", "")
             .replace(")", "")
 
-        val book = Book(
-            user_id = uid,
+        val bookRequest = BookInsertRequest(
+            isbn = selectedBook.isbn,
             title = safeTitle,
             author = selectedBook.authors.joinToString(", "),
-            isbn = null,
-            review = ""
+            publisher = selectedBook.publisher,
+            thumbnail = selectedBook.thumbnail,
+            page_count = null // ← NL API 결과가 있다면 여기에 넣기
         )
 
+        val userBookRequest = UserBookInsertRequest(
+            user_id = uid,
+            isbn = selectedBook.isbn,
+            review = "",
+            read_page = 0
+        )
 
-        val gson = com.google.gson.Gson()
-        Log.d("SUPABASE", "📤 전송 JSON: ${gson.toJson(book)}")
+        val client = SupabaseClient.create()
 
+        client.insertBook(bookRequest).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    Log.d("SUPABASE", "✅ 책 정보 저장 성공")
 
-        try {
-            val client = SupabaseClient.create() // ✅ 토큰 전달 X
-            Log.d("SUPABASE", "📦 SupabaseClient 생성 완료")
+                    // user_books 테이블에도 저장
+                    client.insertUserBook(userBookRequest).enqueue(object : Callback<Void> {
+                        override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                            if (response.isSuccessful) {
+                                Log.d("SUPABASE", "✅ 유저 책 저장 성공")
+                            } else {
+                                Log.e("SUPABASE", "❌ 유저 책 저장 실패: ${response.code()}")
+                            }
+                        }
 
-            client.insertBook(book).enqueue(object : Callback<Void> {
-                override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                    Log.d("SUPABASE", "📥 응답 코드: ${response.code()}")
-                    Log.d("SUPABASE", "📥 응답 body: ${response.body()}")
-                    Log.d("SUPABASE", "📥 에러 body: ${response.errorBody()?.string()}")
-                    if (response.isSuccessful) {
-                        Log.d("SUPABASE", "✅ 책 저장 성공: ${book.title}")
-                    } else {
-                        Log.e("SUPABASE", "❌ 저장 실패: ${response.code()}, ${response.errorBody()?.string()}")
-                    }
+                        override fun onFailure(call: Call<Void>, t: Throwable) {
+                            Log.e("SUPABASE", "❌ 유저 책 저장 네트워크 오류: ${t.message}")
+                        }
+                    })
+                } else {
+                    Log.e("SUPABASE", "❌ 책 정보 저장 실패: ${response.code()}")
                 }
-                override fun onFailure(call: Call<Void>, t: Throwable) {
-                    Log.e("SUPABASE", "❌ 네트워크 오류: ${t.message}")
-                }
-            })
-        } catch (e: Exception) {
-            Log.e("SUPABASE", "❗ 예외 발생: ${e.message}")
-        }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                Log.e("SUPABASE", "❌ 책 정보 저장 네트워크 오류: ${t.message}")
+            }
+        })
     }
-
 }

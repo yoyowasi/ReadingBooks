@@ -11,10 +11,10 @@ class SplashActivity : AppCompatActivity() {
 
         val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
-            // 로그인된 사용자 → 메인화면
+            // 로그인된 사용자라면 메인화면으로 이동
             startActivity(Intent(this, MainActivity::class.java))
         } else {
-            // 로그인 안된 사용자 → 로그인 화면
+            // 로그인되지 않았다면 로그인 화면으로 이동
             startActivity(Intent(this, LoginActivity::class.java))
         }
         finish()
