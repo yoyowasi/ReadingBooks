@@ -6,6 +6,6 @@ data class BookInsertRequest(
     val author: String,
     val publisher: String?,
     val thumbnail: String?,
-    val page_count: Int?
+    val page_count: Int? = null
 )
 

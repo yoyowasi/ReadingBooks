@@ -50,5 +50,13 @@
             android:layout_height="wrap_content"
             android:paddingTop="2dp"
             android:text="읽은 페이지 수" />
+        <TextView
+            android:id="@+id/textPageCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:layout_marginTop="4dp"/>
+
     </LinearLayout>
 </LinearLayout>

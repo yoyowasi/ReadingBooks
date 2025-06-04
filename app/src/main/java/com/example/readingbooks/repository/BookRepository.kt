@@ -1,13 +1,12 @@
 package com.example.readingbooks.repository
 
-import android.util.Log
 import com.example.readingbooks.data.Book
 import com.example.readingbooks.data.UserBook
+import com.example.readingbooks.data.api.SupabaseClient
 import com.google.firebase.auth.FirebaseAuth
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import com.example.readingbooks.data.api.SupabaseClient
 
 
 object BookRepository {
@@ -29,12 +28,15 @@ object BookRepository {
                         val books = response.body()?.map {
                             Book(
                                 uid = it.user_id,
-                                title = "", // books 테이블과 조인하지 않으면 제목 없음
-                                author = "",
+                                title = it.book.title,
+                                author = it.book.author ?: "",
                                 isbn = it.isbn,
-                                review = it.review ?: ""
+                                review = it.review ?: "",
+                                thumbnailUrl = it.book.thumbnail,
+                                page_count = it.book.page_count // ✅ 여기에 page_count 포함
                             )
                         } ?: emptyList()
+
 
                         onResult(books)
                     } else {

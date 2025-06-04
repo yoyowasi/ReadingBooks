@@ -5,7 +5,9 @@ data class Book(
     val title: String,
     val author: String,
     val isbn: String,
-    val review: String = ""
+    val thumbnailUrl: String,
+    val review: String = "",
+    val page_count: Int?
 )
 
 

@@ -12,12 +12,9 @@ data class NlBookResponse(
 
 @Root(name = "doc", strict = false)
 data class NlBookItem(
-    @field:Element(name = "title_info", required = false)
-    var title: String? = null,
-
     @field:Element(name = "page_info", required = false)
     var pageCount: String? = null,
 
-    @field:Element(name = "pub_year_info", required = false)
-    var pubYear: String? = null
+    @field:Element(name = "title_info", required = false)
+    var title: String? = null
 )
