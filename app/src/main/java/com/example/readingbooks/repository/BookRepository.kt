@@ -27,14 +27,16 @@ object BookRepository {
                         // ❗ 만약 어댑터가 Book 기준이면 UserBook → Book 변환 필요
                         val books = response.body()?.map {
                             Book(
+                                id = it.book_id, // ✅ 추가
                                 uid = it.user_id,
                                 title = it.book.title,
                                 author = it.book.author ?: "",
                                 isbn = it.isbn,
-                                review = it.review ?: "",
+                                review = it.review,
                                 thumbnailUrl = it.book.thumbnail,
-                                page_count = it.book.page_count // ✅ 여기에 page_count 포함
+                                page_count = it.book.page_count
                             )
+
                         } ?: emptyList()
 
 

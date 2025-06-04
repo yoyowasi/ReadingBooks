@@ -2,10 +2,10 @@ package com.example.readingbooks
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -52,37 +52,32 @@ class MyLibraryActivity : AppCompatActivity() {
 
     private fun showBookActionDialog(userBook: UserBook) {
         val input = EditText(this)
-        input.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+        input.inputType = InputType.TYPE_CLASS_NUMBER
         input.hint = "읽은 페이지 수 입력"
 
         AlertDialog.Builder(this)
-            .setTitle("📖 ${userBook.book.title}")
+            .setTitle("📖 ${userBook.book?.title ?: "책 제목 없음"}")
             .setMessage("읽은 페이지를 입력하거나 삭제할 수 있습니다.")
             .setView(input)
             .setPositiveButton("저장") { _, _ ->
-                val inputText = input.text.toString().trim()
-                val newPage = inputText.toIntOrNull()
-
-                if (newPage == null || newPage < 0) {
-                    Toast.makeText(this, "올바른 숫자를 입력하세요", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
-
-                updateReadPage(userBook.book_id, newPage)
+                val newPage = input.text.toString().toIntOrNull() ?: 0
+                updateReadPage(userBook.id, newPage) // ✅ 여기!
             }
             .setNeutralButton("삭제") { _, _ ->
-                deleteBook(userBook.book_id)
+                deleteBook(userBook.id)
             }
             .setNegativeButton("취소", null)
             .show()
     }
 
-    private fun deleteBook(bookId: Int) {
-        SupabaseClient.create().deleteUserBookByBookId("eq.$bookId")
+
+    private fun deleteBook(userBookId: String) {
+        SupabaseClient.create().deleteUserBookById("eq.$userBookId")
             .enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
-                        fetchBooks()
+                        Log.d("✅SUPABASE", "삭제 완료")
+                        fetchBooks() // 리스트 새로고침
                     } else {
                         Log.e("❌SUPABASE", "삭제 실패: ${response.code()} ${response.errorBody()?.string()}")
                     }
@@ -94,22 +89,25 @@ class MyLibraryActivity : AppCompatActivity() {
             })
     }
 
-    private fun updateReadPage(bookId: Int, page: Int) {
-        SupabaseClient.create().updateUserBookReadPageByBookId("eq.$bookId", mapOf("read_page" to page))
-            .enqueue(object : Callback<Void> {
-            override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                if (response.isSuccessful) {
-                    fetchBooks()
-                } else {
-                    Log.e("❌SUPABASE", "읽은 페이지 수정 실패: ${response.code()} ${response.errorBody()?.string()}")
-                }
-            }
 
-            override fun onFailure(call: Call<Void>, t: Throwable) {
-                Log.e("❌SUPABASE", "읽은 페이지 수정 실패: ${t.message}")
-            }
-        })
+    private fun updateReadPage(id: String   , page: Int) {
+        SupabaseClient.create().updateUserBookReadPageById(id, mapOf("read_page" to page))
+            .enqueue(object : Callback<Void> {
+                override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    if (response.isSuccessful) {
+                        Log.d("✅SUPABASE", "읽은 페이지 수정 완료")
+                        fetchBooks()
+                    } else {
+                        Log.e("❌SUPABASE", "읽은 페이지 수정 실패: ${response.code()} ${response.errorBody()?.string()}")
+                    }
+                }
+
+                override fun onFailure(call: Call<Void>, t: Throwable) {
+                    Log.e("❌SUPABASE", "읽은 페이지 수정 실패: ${t.message}")
+                }
+            })
     }
+
 
     private fun fetchBooks() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return

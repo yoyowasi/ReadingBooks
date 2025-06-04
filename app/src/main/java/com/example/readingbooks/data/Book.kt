@@ -1,7 +1,8 @@
 package com.example.readingbooks.data
 
 data class Book(
-    val uid: String, // ← 추가
+    val id: Int,                      // ✅ 이 필드 추가
+    val uid: String,
     val title: String,
     val author: String,
     val isbn: String,
