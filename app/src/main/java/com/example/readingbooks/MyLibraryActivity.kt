@@ -6,6 +6,7 @@ import android.text.InputType
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +23,8 @@ class MyLibraryActivity : AppCompatActivity() {
 
     private lateinit var recycler: RecyclerView
     private lateinit var btnLogout: Button
+    private lateinit var btnSameAuthor: Button
+
     private lateinit var adapter: UserBookAdapter
     private val userBookList = mutableListOf<UserBook>()
 
@@ -31,6 +34,7 @@ class MyLibraryActivity : AppCompatActivity() {
 
         recycler = findViewById(R.id.recyclerMyBooks)
         btnLogout = findViewById(R.id.btnLogout)
+        btnSameAuthor = findViewById(R.id.btnSameAuthor)
 
         adapter = UserBookAdapter(userBookList) { userBook ->
             showBookActionDialog(userBook)
@@ -45,6 +49,18 @@ class MyLibraryActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
+        }
+
+        // 오류 수정: 리스트가 비어있거나 book이 null일 때를 대비한 안전한 접근 필요
+        btnSameAuthor.setOnClickListener {
+            val firstBook = userBookList.firstOrNull()
+            val authorName = firstBook?.book?.author ?: run {
+                Toast.makeText(this, "책 정보가 없습니다.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val intent = Intent(this, SameAuthorActivity::class.java)
+            intent.putExtra("AUTHOR_NAME", authorName)
+            startActivity(intent)
         }
 
         fetchBooks()
@@ -68,6 +84,7 @@ class MyLibraryActivity : AppCompatActivity() {
             }
             .setNegativeButton("취소", null)
             .show()
+
     }
 
 
@@ -91,7 +108,7 @@ class MyLibraryActivity : AppCompatActivity() {
 
 
     private fun updateReadPage(id: String   , page: Int) {
-        SupabaseClient.create().updateUserBookReadPageById(id, mapOf("read_page" to page))
+        SupabaseClient.create().updateUserBookReadPageById("eq.$id", mapOf("read_page" to page))
             .enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {

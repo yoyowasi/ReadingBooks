@@ -9,6 +9,8 @@ plugins {
 android {
     namespace = "com.example.readingbooks"
     compileSdk = 35
+    viewBinding.isEnabled = true
+
 
     defaultConfig {
         applicationId = "com.example.readingbooks"
