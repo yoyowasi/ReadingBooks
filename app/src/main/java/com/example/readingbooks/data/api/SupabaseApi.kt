@@ -20,16 +20,15 @@ interface SupabaseApi {
     @POST("books")
     fun insertBook(@Body book: BookInsertRequest): Call<Void>
 
-    @GET("books")
+    @GET("books?select=id,title,author,isbn,thumbnail,page_count")
     fun getBookByIsbn(@Query("isbn") isbn: String): Call<List<Book>>
 
     @POST("user_books")
     @Headers("Prefer: return=representation")
     fun insertUserBook(@Body userBook: UserBookInsertRequest): Call<Void>
 
-    @GET("user_books?select=*,book:books(title,thumbnail,page_count)")
+    @GET("user_books?select=*,book:books(isbn,title,author,thumbnail)")
     fun getUserBooksByUserId(@Query("user_id") userIdFilter: String): Call<List<UserBook>>
-
     @DELETE("user_books")
     fun deleteUserBookById(@Query("id") id: String): Call<Void>
 
@@ -41,11 +40,8 @@ interface SupabaseApi {
 
     @PATCH("user_books")
     fun updateUserBookReadPageById(
-        @Query("id", encoded = true) id: String,
+        @Query("id") idFilter: String,
         @Body readPage: Map<String, Int>
     ): Call<Void>
 
 }
-
-
-
