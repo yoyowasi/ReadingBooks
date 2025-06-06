@@ -108,7 +108,7 @@ class MyLibraryActivity : AppCompatActivity() {
 
 
     private fun updateReadPage(id: String   , page: Int) {
-        SupabaseClient.create().updateUserBookReadPageById(id, mapOf("read_page" to page))
+        SupabaseClient.create().updateUserBookReadPageById("eq.$id", mapOf("read_page" to page))
             .enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {

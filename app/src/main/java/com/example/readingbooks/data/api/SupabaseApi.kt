@@ -40,8 +40,9 @@ interface SupabaseApi {
 //    ): Call<Void>
 
     @PATCH("user_books")
+    @Headers("Prefer: return=representation")
     fun updateUserBookReadPageById(
-        @Query("id") idFilter: String,
+        @Query("id") idFilter: String, // eq.{id} 형식 필요!
         @Body readPage: Map<String, Int>
     ): Call<Void>
 
