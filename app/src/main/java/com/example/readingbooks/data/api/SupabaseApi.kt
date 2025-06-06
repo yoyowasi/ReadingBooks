@@ -41,11 +41,8 @@ interface SupabaseApi {
 
     @PATCH("user_books")
     fun updateUserBookReadPageById(
-        @Query("id", encoded = true) id: String,
+        @Query("id") idFilter: String,
         @Body readPage: Map<String, Int>
     ): Call<Void>
 
 }
-
-
-

@@ -27,7 +27,7 @@ object BookRepository {
                         // ❗ 만약 어댑터가 Book 기준이면 UserBook → Book 변환 필요
                         val books = response.body()?.map {
                             Book(
-                                id = it.book_id, // ✅ 추가
+                                id = it.book_id ?: 0, // 또는 적절한 예외 처리
                                 uid = it.user_id,
                                 title = it.book.title,
                                 author = it.book.author ?: "",
