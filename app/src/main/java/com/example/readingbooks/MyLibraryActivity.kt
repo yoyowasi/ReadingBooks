@@ -80,25 +80,49 @@ class MyLibraryActivity : AppCompatActivity() {
     }
 
     private fun showBookActionDialog(userBook: UserBook) {
-        val input = EditText(this)
-        input.inputType = InputType.TYPE_CLASS_NUMBER
-        input.hint = "읽은 페이지 수 입력"
+        val dialogView = layoutInflater.inflate(R.layout.dialog_custom_actions, null)
+        val input = dialogView.findViewById<EditText>(R.id.inputPage)
+        val btnSave = dialogView.findViewById<Button>(R.id.btnSave)
+        val btnDelete = dialogView.findViewById<Button>(R.id.btnDelete)
+        val btnSameAuthor = dialogView.findViewById<Button>(R.id.btnSameAuthor)
+        val btnCancel = dialogView.findViewById<Button>(R.id.btnCancel)
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle("📖 ${userBook.book?.title ?: "책 제목 없음"}")
-            .setMessage("읽은 페이지를 입력하거나 삭제할 수 있습니다.")
-            .setView(input)
-            .setPositiveButton("저장") { _, _ ->
-                val newPage = input.text.toString().toIntOrNull() ?: 0
-                updateReadPage(userBook.id, newPage) // ✅ 여기!
-            }
-            .setNeutralButton("삭제") { _, _ ->
-                deleteBook(userBook.id)
-            }
-            .setNegativeButton("취소", null)
-            .show()
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
 
+        btnSave.setOnClickListener {
+            val page = input.text.toString().toIntOrNull() ?: 0
+            updateReadPage(userBook.id, page)
+            dialog.dismiss()
+        }
+
+        btnDelete.setOnClickListener {
+            deleteBook(userBook.id)
+            dialog.dismiss()
+        }
+
+        btnSameAuthor.setOnClickListener {
+            val authorName = userBook.book?.author
+            if (!authorName.isNullOrBlank()) {
+                val intent = Intent(this, SameAuthorActivity::class.java)
+                intent.putExtra("AUTHOR_NAME", authorName)
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "저자 정보가 없습니다.", Toast.LENGTH_SHORT).show()
+            }
+            dialog.dismiss()
+        }
+
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
+
 
 
     private fun deleteBook(userBookId: String) {
