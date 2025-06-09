@@ -2,11 +2,8 @@ package com.example.readingbooks
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.InputType
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,12 +15,16 @@ import com.google.firebase.auth.FirebaseAuth
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MyLibraryActivity : AppCompatActivity() {
 
     private lateinit var recycler: RecyclerView
     private lateinit var btnLogout: Button
     private lateinit var btnSameAuthor: Button
+    private lateinit var btnGoalSetting: Button
+    private lateinit var textReadingProgress: TextView
 
     private lateinit var adapter: UserBookAdapter
     private val userBookList = mutableListOf<UserBook>()
@@ -35,21 +36,29 @@ class MyLibraryActivity : AppCompatActivity() {
         recycler = findViewById(R.id.recyclerMyBooks)
         btnLogout = findViewById(R.id.btnLogout)
         btnSameAuthor = findViewById(R.id.btnSameAuthor)
+        btnGoalSetting = findViewById(R.id.btnGoalSetting)
+        textReadingProgress = findViewById(R.id.textReadingProgress)
 
-        // ⬇️ 롱클릭, 클릭 콜백 둘 다 넘겨줍니다
+        // 날짜 확인하여 하루마다 초기화
+        val prefs = getSharedPreferences("reading_goal", MODE_PRIVATE)
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        val savedDate = prefs.getString("lastResetDate", "")
+
+        if (today != savedDate) {
+            prefs.edit()
+                .putInt("totalReadPages", 0)
+                .putString("lastResetDate", today)
+                .apply()
+        }
+
+        updateReadingProgressText()
+
         adapter = UserBookAdapter(
             userBookList,
             onBookLongClick = { authorName ->
-                Log.d("LONGCLICK", "롱클릭 authorName=$authorName")
-                try {
-                    val intent = Intent(this, SameAuthorActivity::class.java)
-                    intent.putExtra("AUTHOR_NAME", authorName)
-                    Log.d("LONGCLICK", "✅ startActivity 호출 전")
-                    startActivity(intent)
-                    Log.d("LONGCLICK", "✅ startActivity 호출 완료")
-                } catch (e: Exception) {
-                    Log.e("LONGCLICK", "❌ startActivity 실패: ${e.message}", e)
-                }
+                val intent = Intent(this, SameAuthorActivity::class.java)
+                intent.putExtra("AUTHOR_NAME", authorName)
+                startActivity(intent)
             },
             onBookClick = { userBook -> showBookActionDialog(userBook) }
         )
@@ -74,6 +83,10 @@ class MyLibraryActivity : AppCompatActivity() {
             val intent = Intent(this, SameAuthorActivity::class.java)
             intent.putExtra("AUTHOR_NAME", authorName)
             startActivity(intent)
+        }
+
+        btnGoalSetting.setOnClickListener {
+            startActivity(Intent(this, GoalSettingActivity::class.java))
         }
 
         fetchBooks()
@@ -123,15 +136,12 @@ class MyLibraryActivity : AppCompatActivity() {
         dialog.show()
     }
 
-
-
     private fun deleteBook(userBookId: String) {
         SupabaseClient.create().deleteUserBookById("eq.$userBookId")
             .enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
-                        Log.d("✅SUPABASE", "삭제 완료")
-                        fetchBooks() // 리스트 새로고침
+                        fetchBooks()
                     } else {
                         Log.e("❌SUPABASE", "삭제 실패: ${response.code()} ${response.errorBody()?.string()}")
                     }
@@ -143,13 +153,24 @@ class MyLibraryActivity : AppCompatActivity() {
             })
     }
 
-
-    private fun updateReadPage(id: String   , page: Int) {
+    private fun updateReadPage(id: String, page: Int) {
         SupabaseClient.create().updateUserBookReadPageById("eq.$id", mapOf("read_page" to page))
             .enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
-                        Log.d("✅SUPABASE", "읽은 페이지 수정 완료")
+                        val prefs = getSharedPreferences("reading_goal", MODE_PRIVATE)
+                        val dailyGoal = prefs.getInt("dailyPageGoal", 30)
+
+                        val newTotal = prefs.getInt("totalReadPages", 0) + page
+                        prefs.edit().putInt("totalReadPages", newTotal).apply()
+
+                        if (newTotal >= dailyGoal) {
+                            Toast.makeText(this@MyLibraryActivity, "🎉 오늘 목표 달성!", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this@MyLibraryActivity, "{$page}쪽 추가 기록됨", Toast.LENGTH_SHORT).show()
+                        }
+
+                        updateReadingProgressText()
                         fetchBooks()
                     } else {
                         Log.e("❌SUPABASE", "읽은 페이지 수정 실패: ${response.code()} ${response.errorBody()?.string()}")
@@ -162,6 +183,13 @@ class MyLibraryActivity : AppCompatActivity() {
             })
     }
 
+    private fun updateReadingProgressText() {
+        val prefs = getSharedPreferences("reading_goal", MODE_PRIVATE)
+        val dailyGoal = prefs.getInt("dailyPageGoal", 30)
+        val totalRead = prefs.getInt("totalReadPages", 0)
+        textReadingProgress.text = "오늘 목표 ${dailyGoal}쪽 중 ${totalRead}쪽 읽음"
+    }
+
     private fun fetchBooks() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
@@ -170,9 +198,6 @@ class MyLibraryActivity : AppCompatActivity() {
                 override fun onResponse(call: Call<List<UserBook>>, response: Response<List<UserBook>>) {
                     if (response.isSuccessful) {
                         val books = response.body() ?: emptyList()
-                        Log.d("✅SUPABASE", "${books.size}권 불러옴")
-
-                        // ✅ 중복 제거: 같은 ISBN이 여러 번 저장된 경우 하나만 유지
                         val distinctBooks = books.distinctBy { it.isbn }
 
                         userBookList.clear()
@@ -188,5 +213,4 @@ class MyLibraryActivity : AppCompatActivity() {
                 }
             })
     }
-
 }

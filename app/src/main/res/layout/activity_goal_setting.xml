@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center_vertical">
+
+    <EditText
+        android:id="@+id/editGoalPage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="하루 목표 페이지 수 입력"
+        android:inputType="number"
+        android:textColor="#000000"
+
+        android:background="@android:drawable/edit_text"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp" />
+
+    <Button
+        android:id="@+id/btnSaveGoal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="목표 저장" />
+</LinearLayout>
