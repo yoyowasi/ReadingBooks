@@ -1,10 +1,12 @@
 package com.example.readingbooks.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.example.readingbooks.R
@@ -12,6 +14,7 @@ import com.example.readingbooks.data.UserBook
 
 class UserBookAdapter(
     private val books: List<UserBook>,
+    private val onBookLongClick: (String) -> Unit,
     private val onBookClick: (UserBook) -> Unit
 ) : RecyclerView.Adapter<UserBookAdapter.ViewHolder>() {
 
@@ -19,8 +22,6 @@ class UserBookAdapter(
         val textTitle: TextView = view.findViewById(R.id.textTitle)
         val textReadPage: TextView = view.findViewById(R.id.textReadPage)
         val thumbnail: ImageView = view.findViewById(R.id.imageThumbnail)
-        val textPageCount: TextView = view.findViewById(R.id.textPageCount)
-
         init {
             view.setOnClickListener {
                 val position = adapterPosition
@@ -28,8 +29,29 @@ class UserBookAdapter(
                     onBookClick(books[position])
                 }
             }
+
+            view.setOnLongClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    val authorName = books[position].book.author
+                    Log.d("롱클릭", "롱클릭 동작, authorName=$authorName")
+
+                    if (!authorName.isNullOrBlank()) {
+                        try {
+                            onBookLongClick(authorName)
+                        } catch (e: Exception) {
+                            Log.e("롱클릭", "startActivity 실패: ${e.message}", e)
+                        }
+                    } else {
+                        Log.e("롱클릭", "❌ authorName이 null 또는 빈 문자열입니다.")
+                    }
+                }
+                true
+            }
+
         }
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -44,9 +66,6 @@ class UserBookAdapter(
         holder.textReadPage.text = "읽은 페이지: ${book.read_page}쪽"
         holder.thumbnail.load(book.book.thumbnail)
 
-        // ✅ 페이지 수 표시 추가
-        val pageCountText = book.book.page_count?.toString() ?: "쪽수 정보 없음"
-        holder.textPageCount.text = "총 페이지 수: $pageCountText"
     }
 
     override fun getItemCount(): Int = books.size

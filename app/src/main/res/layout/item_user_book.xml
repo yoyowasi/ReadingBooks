@@ -6,7 +6,10 @@
     android:orientation="horizontal"
     android:padding="16dp"
     android:background="?attr/selectableItemBackground"
-    android:layout_marginBottom="8dp">
+    android:layout_marginBottom="8dp"
+    android:clickable="true"
+    android:focusable="true"
+>
 
     <!-- 썸네일 이미지 -->
     <ImageView

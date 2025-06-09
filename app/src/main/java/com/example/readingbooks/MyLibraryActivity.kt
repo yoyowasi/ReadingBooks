@@ -36,9 +36,23 @@ class MyLibraryActivity : AppCompatActivity() {
         btnLogout = findViewById(R.id.btnLogout)
         btnSameAuthor = findViewById(R.id.btnSameAuthor)
 
-        adapter = UserBookAdapter(userBookList) { userBook ->
-            showBookActionDialog(userBook)
-        }
+        // ⬇️ 롱클릭, 클릭 콜백 둘 다 넘겨줍니다
+        adapter = UserBookAdapter(
+            userBookList,
+            onBookLongClick = { authorName ->
+                Log.d("LONGCLICK", "롱클릭 authorName=$authorName")
+                try {
+                    val intent = Intent(this, SameAuthorActivity::class.java)
+                    intent.putExtra("AUTHOR_NAME", authorName)
+                    Log.d("LONGCLICK", "✅ startActivity 호출 전")
+                    startActivity(intent)
+                    Log.d("LONGCLICK", "✅ startActivity 호출 완료")
+                } catch (e: Exception) {
+                    Log.e("LONGCLICK", "❌ startActivity 실패: ${e.message}", e)
+                }
+            },
+            onBookClick = { userBook -> showBookActionDialog(userBook) }
+        )
 
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = adapter
@@ -51,7 +65,6 @@ class MyLibraryActivity : AppCompatActivity() {
             finish()
         }
 
-        // 오류 수정: 리스트가 비어있거나 book이 null일 때를 대비한 안전한 접근 필요
         btnSameAuthor.setOnClickListener {
             val firstBook = userBookList.firstOrNull()
             val authorName = firstBook?.book?.author ?: run {

@@ -1,6 +1,5 @@
 package com.example.readingbooks
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -9,10 +8,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.readingbooks.adapter.SearchResultAdapter
 import com.example.readingbooks.data.model.BookDocument
-import com.example.readingbooks.data.model.NlBookResponse
 import com.example.readingbooks.databinding.ActivitySameAuthorBooksBinding
 import com.example.readingbooks.viewmodel.BookViewModel
-import com.example.readingbooks.data.api.NlRetrofitInstance
 import com.example.readingbooks.data.api.RetrofitInstance
 import com.example.readingbooks.data.model.BookSearchResponse
 import retrofit2.Call
@@ -28,6 +25,7 @@ class SameAuthorActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("AUTHOR_ACTIVITY", "SameAuthorActivity onCreate 호출됨")
         binding = ActivitySameAuthorBooksBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -37,6 +35,8 @@ class SameAuthorActivity : AppCompatActivity() {
         bookViewModel = ViewModelProvider(this)[BookViewModel::class.java]
 
         val authorName = intent.getStringExtra("AUTHOR_NAME") ?: ""
+        Log.d("AUTHOR_INTENT", "넘겨받은 authorName=$authorName") // 2️⃣
+
         binding.textSameAuthorTitle.text = if (authorName.isNotBlank()) {
             "\"$authorName\" 저자의 책"
         } else {
@@ -45,8 +45,8 @@ class SameAuthorActivity : AppCompatActivity() {
 
         // SearchResultAdapter와 동일하게 아이템 클릭 처리
         adapter = SearchResultAdapter(searchResults) { bookDoc ->
-    Toast.makeText(this, "${bookDoc.title} 선택됨", Toast.LENGTH_SHORT).show()
-}
+            Toast.makeText(this, "${bookDoc.title} 선택됨", Toast.LENGTH_SHORT).show()
+        }
         binding.recyclerSameAuthor.layoutManager = LinearLayoutManager(this)
         binding.recyclerSameAuthor.adapter = adapter
 
@@ -59,32 +59,32 @@ class SameAuthorActivity : AppCompatActivity() {
         fetchBooksByAuthor(authorName)
     }
 
-private fun fetchBooksByAuthor(author: String) {
-    // Kakao 책 API는 'query'에 저자명, 'target'에 'person'을 주면 저자 검색이 됩니다.
-    RetrofitInstance.api.searchBooks(author)
-        .enqueue(object : Callback<BookSearchResponse> {
-            override fun onResponse(
-                call: Call<BookSearchResponse>,
-                response: Response<BookSearchResponse>
-            ) {
-                if (response.isSuccessful) {
-                    val docs = response.body()?.documents ?: emptyList()
-                    searchResults.clear()
-                    searchResults.addAll(docs)
-                    adapter.notifyDataSetChanged()
-                    if (docs.isEmpty()) {
-                        Toast.makeText(this@SameAuthorActivity, "검색 결과가 없습니다.", Toast.LENGTH_SHORT).show()
+    private fun fetchBooksByAuthor(author: String) {
+        Log.d("AUTHOR_SEARCH", "API 검색 author=$author") // 3️⃣
+        RetrofitInstance.api.searchBooks(author)
+            .enqueue(object : Callback<BookSearchResponse> {
+                override fun onResponse(
+                    call: Call<BookSearchResponse>,
+                    response: Response<BookSearchResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        val docs = response.body()?.documents ?: emptyList()
+                        Log.d("AUTHOR_RESULT", "검색 결과 ${docs.size}권") // 4️⃣
+                        searchResults.clear()
+                        searchResults.addAll(docs)
+                        adapter.notifyDataSetChanged()
+                        if (docs.isEmpty()) {
+                            Toast.makeText(this@SameAuthorActivity, "검색 결과가 없습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Log.e("AUTHOR_RESULT", "API 실패 code=${response.code()}") // 5️⃣
                     }
-                } else {
-                    Toast.makeText(this@SameAuthorActivity, "도서 검색 실패", Toast.LENGTH_SHORT).show()
-                    Log.e("SameAuthorActivity", "API error code: ${response.code()}")
                 }
-            }
 
-            override fun onFailure(call: Call<BookSearchResponse>, t: Throwable) {
-                Toast.makeText(this@SameAuthorActivity, "네트워크 오류: ${t.message}", Toast.LENGTH_SHORT).show()
-                Log.e("SameAuthorActivity", "API failure: ${t.message}")
-            }
-        })
-}
+                override fun onFailure(call: Call<BookSearchResponse>, t: Throwable) {
+                    Log.e("AUTHOR_RESULT", "API 네트워크 오류: ${t.message}") // 6️⃣
+                }
+            })
+    }
+
 }
