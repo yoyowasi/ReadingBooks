@@ -162,7 +162,6 @@ class MyLibraryActivity : AppCompatActivity() {
             })
     }
 
-
     private fun fetchBooks() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
@@ -173,8 +172,11 @@ class MyLibraryActivity : AppCompatActivity() {
                         val books = response.body() ?: emptyList()
                         Log.d("✅SUPABASE", "${books.size}권 불러옴")
 
+                        // ✅ 중복 제거: 같은 ISBN이 여러 번 저장된 경우 하나만 유지
+                        val distinctBooks = books.distinctBy { it.isbn }
+
                         userBookList.clear()
-                        userBookList.addAll(books)
+                        userBookList.addAll(distinctBooks)
                         adapter.notifyDataSetChanged()
                     } else {
                         Log.e("❌SUPABASE", "불러오기 실패: ${response.code()} ${response.errorBody()?.string()}")
@@ -186,4 +188,5 @@ class MyLibraryActivity : AppCompatActivity() {
                 }
             })
     }
+
 }

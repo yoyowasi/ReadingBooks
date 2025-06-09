@@ -72,27 +72,61 @@ class SameAuthorActivity : AppCompatActivity() {
     }
 
     private fun fetchBooksByAuthor(author: String) {
-        RetrofitInstance.api.searchBooks(author)
-            .enqueue(object : Callback<BookSearchResponse> {
+        fetchUserBookIsbns { ownedIsbns ->
+            RetrofitInstance.api.searchBooks(author)
+                .enqueue(object : Callback<BookSearchResponse> {
+                    override fun onResponse(
+                        call: Call<BookSearchResponse>,
+                        response: Response<BookSearchResponse>
+                    ) {
+                        if (response.isSuccessful) {
+                            val docs = response.body()?.documents ?: emptyList()
+
+                            val filteredDocs = docs.filter { doc ->
+                                val isbn13 = extractIsbn13(doc.isbn)
+                                isbn13 != null && isbn13 !in ownedIsbns
+                            }
+
+                            searchResults.clear()
+                            searchResults.addAll(filteredDocs)
+                            adapter.notifyDataSetChanged()
+
+                            if (filteredDocs.isEmpty()) {
+                                Toast.makeText(this@SameAuthorActivity, "이미 해당 저자의 모든 책을 보유하고 계십니다.", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Log.e("AUTHOR_RESULT", "API 실패 code=${response.code()}")
+                        }
+                    }
+
+                    override fun onFailure(call: Call<BookSearchResponse>, t: Throwable) {
+                        Log.e("AUTHOR_RESULT", "API 네트워크 오류: ${t.message}")
+                    }
+                })
+        }
+    }
+
+    private fun fetchUserBookIsbns(onResult: (List<String>) -> Unit) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        SupabaseClient.create().getUserBooksByUserId("eq.$uid")
+            .enqueue(object : Callback<List<com.example.readingbooks.data.UserBook>> {
                 override fun onResponse(
-                    call: Call<BookSearchResponse>,
-                    response: Response<BookSearchResponse>
+                    call: Call<List<com.example.readingbooks.data.UserBook>>,
+                    response: Response<List<com.example.readingbooks.data.UserBook>>
                 ) {
                     if (response.isSuccessful) {
-                        val docs = response.body()?.documents ?: emptyList()
-                        searchResults.clear()
-                        searchResults.addAll(docs)
-                        adapter.notifyDataSetChanged()
-                        if (docs.isEmpty()) {
-                            Toast.makeText(this@SameAuthorActivity, "검색 결과가 없습니다.", Toast.LENGTH_SHORT).show()
-                        }
+                        val isbns = response.body()?.map { it.isbn }?.distinct() ?: emptyList()
+                        onResult(isbns)
                     } else {
-                        Log.e("AUTHOR_RESULT", "API 실패 code=${response.code()}")
+                        Log.e("❌SUPABASE", "user_books 불러오기 실패: ${response.code()}")
+                        onResult(emptyList())
                     }
                 }
 
-                override fun onFailure(call: Call<BookSearchResponse>, t: Throwable) {
-                    Log.e("AUTHOR_RESULT", "API 네트워크 오류: ${t.message}")
+                override fun onFailure(call: Call<List<com.example.readingbooks.data.UserBook>>, t: Throwable) {
+                    Log.e("❌SUPABASE", "user_books 네트워크 오류: ${t.message}")
+                    onResult(emptyList())
                 }
             })
     }
