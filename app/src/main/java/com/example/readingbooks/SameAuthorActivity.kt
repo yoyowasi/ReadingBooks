@@ -2,6 +2,7 @@ package com.example.readingbooks
 
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -34,6 +35,7 @@ class SameAuthorActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySameAuthorBooksBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
 
         supportActionBar?.title = "동일 저자 도서"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -70,6 +72,16 @@ class SameAuthorActivity : AppCompatActivity() {
 
         fetchBooksByAuthor(authorName)
     }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                finish() // 현재 액티비티 종료 = 뒤로가기 효과
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
 
     private fun fetchBooksByAuthor(author: String) {
         fetchUserBookIsbns { ownedIsbns ->

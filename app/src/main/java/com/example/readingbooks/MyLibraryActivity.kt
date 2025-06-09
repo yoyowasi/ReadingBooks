@@ -3,6 +3,7 @@ package com.example.readingbooks
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -37,6 +38,9 @@ class MyLibraryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_library)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true) // ← 버튼 활성화
+        supportActionBar?.title = "내 서재"
+
 
         recycler = findViewById(R.id.recyclerMyBooks)
         btnLogout = findViewById(R.id.btnLogout)
@@ -78,7 +82,7 @@ class MyLibraryActivity : AppCompatActivity() {
         btnLogout.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             val intent = Intent(this, LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            intent.flags = Intent(this, LoginActivity::class.java).flags or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         }
@@ -100,6 +104,22 @@ class MyLibraryActivity : AppCompatActivity() {
 
         fetchBooks()
     }
+    override fun onResume() {
+        super.onResume()
+        fetchBooks()
+        updateReadingProgressText()
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                finish() // 현재 액티비티 종료 = 뒤로가기 효과
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+
 
     private fun showBookActionDialog(userBook: UserBook) {
         val dialogView = layoutInflater.inflate(R.layout.dialog_custom_actions, null)
@@ -241,7 +261,7 @@ class MyLibraryActivity : AppCompatActivity() {
 
         textTotalBooks.text = "총 도서 수: $totalBooks"
         textTotalPages.text = "총 읽은 페이지 수: $totalPages"
-        textTopAuthor.text = "가장 많이 읽은 저자: $mostReadAuthor ({$mostReadCount}권)"
+        textTopAuthor.text = "가장 많이 읽은 저자: $mostReadAuthor ${mostReadCount}권"
     }
 
 }

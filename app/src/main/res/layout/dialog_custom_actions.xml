@@ -4,7 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:padding="20dp"
+    android:layout_gravity="center_horizontal"
+
+>
 
     <EditText
         android:id="@+id/inputPage"
@@ -20,14 +23,6 @@
         android:gravity="end"
         android:layout_marginTop="16dp"
         android:weightSum="4">
-
-        <Button
-            android:id="@+id/btnSave"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="저장" />
-
         <Button
             android:id="@+id/btnDelete"
             android:layout_width="0dp"
@@ -35,12 +30,6 @@
             android:layout_weight="1"
             android:text="삭제" />
 
-        <Button
-            android:id="@+id/btnSameAuthor"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="동일 저자" />
 
         <Button
             android:id="@+id/btnCancel"
@@ -48,5 +37,19 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="취소" />
+
+        <Button
+            android:id="@+id/btnSameAuthor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="다른작품" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="저장" />
     </LinearLayout>
 </LinearLayout>
