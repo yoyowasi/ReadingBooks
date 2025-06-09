@@ -8,7 +8,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-
 object BookRepository {
 
     fun getBooksFromSupabase(
@@ -24,21 +23,19 @@ object BookRepository {
             client.getUserBooksByUserId(user.uid).enqueue(object : Callback<List<UserBook>> {
                 override fun onResponse(call: Call<List<UserBook>>, response: Response<List<UserBook>>) {
                     if (response.isSuccessful) {
-                        // ❗ 만약 어댑터가 Book 기준이면 UserBook → Book 변환 필요
-                        val books = response.body()?.map {
+                        // ❗ UserBook → Book 변환 (null 안전성 추가)
+                        val books = response.body()?.map { userBook ->
                             Book(
-                                id = it.book_id ?: 0, // 또는 적절한 예외 처리
-                                uid = it.user_id,
-                                title = it.book.title,
-                                author = it.book.author ?: "",
-                                isbn = it.isbn,
-                                review = it.review,
-                                thumbnailUrl = it.book.thumbnail,
-                                page_count = it.book.page_count
+                                id = userBook.book_id ?: 0,
+                                uid = userBook.user_id,
+                                title = userBook.book.title ?: "제목 없음", // ← null 안전성
+                                author = userBook.book.author ?: "저자 없음", // ← null 안전성
+                                isbn = userBook.isbn,
+                                review = userBook.review,
+                                thumbnailUrl = userBook.book.thumbnail ?: "", // ← null 안전성
+                                page_count = userBook.book.page_count
                             )
-
                         } ?: emptyList()
-
 
                         onResult(books)
                     } else {
@@ -50,8 +47,6 @@ object BookRepository {
                     onError(t)
                 }
             })
-
         }
     }
-
 }

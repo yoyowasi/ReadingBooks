@@ -8,8 +8,7 @@
     android:background="?attr/selectableItemBackground"
     android:layout_marginBottom="8dp"
     android:clickable="true"
-    android:focusable="true"
->
+    android:focusable="true">
 
     <!-- 썸네일 이미지 -->
     <ImageView
@@ -34,16 +33,18 @@
             android:textColor="#222222"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="책 제목 또는 ISBN" />
+            android:text="책 제목" />
 
+        <!-- 📝 저자 정보 추가 -->
         <TextView
-            android:id="@+id/textReview"
+            android:id="@+id/textAuthor"
             android:textSize="14sp"
-            android:textColor="#555555"
+            android:textColor="#666666"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingTop="4dp"
-            android:text="리뷰 내용" />
+            android:paddingTop="2dp"
+            android:text="저자명"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/textReadPage"
@@ -53,13 +54,15 @@
             android:layout_height="wrap_content"
             android:paddingTop="2dp"
             android:text="읽은 페이지 수" />
+
+        <!-- 📝 롱클릭 힌트 추가 -->
         <TextView
-            android:id="@+id/textPageCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="#555555"
-            android:layout_marginTop="4dp"/>
+            android:textSize="12sp"
+            android:textColor="#999999"
+            android:layout_marginTop="4dp"
+            android:text="💡 길게 눌러서 관련 도서 검색" />
 
     </LinearLayout>
 </LinearLayout>

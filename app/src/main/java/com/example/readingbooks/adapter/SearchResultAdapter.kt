@@ -22,7 +22,7 @@ class SearchResultAdapter(
 
         init {
             itemView.setOnClickListener {
-                val position = adapterPosition
+                val position = bindingAdapterPosition // ← 변경
                 if (position != RecyclerView.NO_POSITION) {
                     onItemClick(books[position])
                 }
