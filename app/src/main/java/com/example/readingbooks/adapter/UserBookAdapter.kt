@@ -20,6 +20,7 @@ class UserBookAdapter(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textTitle: TextView = view.findViewById(R.id.textTitle)
+        val author = itemView.findViewById<TextView>(R.id.textAuthor)
         val textReadPage: TextView = view.findViewById(R.id.textReadPage)
         val thumbnail: ImageView = view.findViewById(R.id.imageThumbnail)
         init {
@@ -62,11 +63,14 @@ class UserBookAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val book = books[position]
 
-        holder.textTitle.text = "제목: ${book.book.title}"
-        holder.textReadPage.text = "읽은 페이지: ${book.read_page}쪽"
-        holder.thumbnail.load(book.book.thumbnail)
+        Log.d("UserBookAdapter", "book.title=${book.book.title}, author=${book.book.author}, page=${book.read_page}")
 
+        holder.textTitle.text = "제목: ${book.book.title ?: "제목 없음"}"
+        holder.author.text = "저자: ${book.book.author ?: "알 수 없음"}"
+        holder.textReadPage.text = "읽은 페이지: ${book.read_page ?: 0}쪽"
+        holder.thumbnail.load(book.book.thumbnail)
     }
+
 
     override fun getItemCount(): Int = books.size
 }

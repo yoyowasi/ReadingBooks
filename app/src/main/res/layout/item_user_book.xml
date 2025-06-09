@@ -9,7 +9,7 @@
     android:layout_marginBottom="8dp"
     android:clickable="true"
     android:focusable="true"
->
+    >
 
     <!-- 썸네일 이미지 -->
     <ImageView
@@ -36,14 +36,12 @@
             android:layout_height="wrap_content"
             android:text="책 제목 또는 ISBN" />
 
+
         <TextView
-            android:id="@+id/textReview"
-            android:textSize="14sp"
-            android:textColor="#555555"
+            android:id="@+id/textAuthor"
+            android:text="저자"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingTop="4dp"
-            android:text="리뷰 내용" />
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/textReadPage"

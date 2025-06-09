@@ -27,7 +27,7 @@ interface SupabaseApi {
     @Headers("Prefer: return=representation")
     fun insertUserBook(@Body userBook: UserBookInsertRequest): Call<Void>
 
-    @GET("user_books?select=*,book:books(title,thumbnail,page_count)")
+    @GET("user_books?select=*,book:books(title,author,thumbnail,page_count)")
     fun getUserBooksByUserId(@Query("user_id") userIdFilter: String): Call<List<UserBook>>
 
     @DELETE("user_books")
