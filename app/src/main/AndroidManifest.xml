@@ -27,5 +27,7 @@
         <activity android:name=".RegisterActivity" />
         <activity android:name=".MyLibraryActivity" />
         <activity android:name=".SameAuthorActivity" />
+        <activity android:name=".GoalSettingActivity" />
+
     </application>
 </manifest>

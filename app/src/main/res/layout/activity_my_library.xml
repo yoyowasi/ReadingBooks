@@ -7,28 +7,102 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:fitsSystemWindows="true"
-    >
+    android:fitsSystemWindows="true">
 
-    <Button
-        android:id="@+id/btnLogout"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnGoalSetting"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:backgroundTint="#1E88E5"
+            android:text="🎯 목표 설정"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="16dp"
+            android:layout_height="48dp" />
+
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="로그아웃" />
+    </LinearLayout>
+
+    <!-- 상단 텍스트 -->
+    <TextView
+        android:id="@+id/textGoalTitle"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="로그아웃"
-        android:layout_gravity="end"
-        android:layout_marginBottom="8dp" />
+        android:text="📘 오늘의 독서 목표"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#1E88E5"
+        android:gravity="center"
+        android:layout_marginBottom="12dp" />
+
+    <!-- 목표 진행 텍스트 -->
+    <TextView
+        android:id="@+id/textReadingProgress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="오늘 목표 30쪽 중 0쪽 읽음"
+        android:textSize="16sp"
+        android:textColor="#000000"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <!-- 대시보드 통계 -->
+    <TextView
+        android:id="@+id/textTotalBooks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="총 도서 수: 0"
+        android:textSize="16sp"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/textTotalPages"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="총 읽은 페이지 수: 0"
+        android:textSize="16sp"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/textTopAuthor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="가장 많이 읽은 저자: 없음"
+        android:textSize="16sp"
+        android:layout_marginBottom="12dp" />
 
 
 
+    <!-- 책 리스트 -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerMyBooks"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1" />
+
     <Button
-            android:id="@+id/btnSameAuthor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="동일 저자 책 찾기"
-            android:layout_marginBottom="16dp" />
+        android:id="@+id/btnSameAuthor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="동일 저자 책 찾기"
+        android:layout_gravity="end"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
+
 </LinearLayout>

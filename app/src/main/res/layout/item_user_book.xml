@@ -8,7 +8,10 @@
     android:background="?attr/selectableItemBackground"
     android:layout_marginBottom="8dp"
     android:clickable="true"
-    android:focusable="true">
+
+    android:focusable="true"
+    >
+
 
     <!-- 썸네일 이미지 -->
     <ImageView
@@ -35,16 +38,13 @@
             android:layout_height="wrap_content"
             android:text="책 제목" />
 
-        <!-- 📝 저자 정보 추가 -->
+
         <TextView
             android:id="@+id/textAuthor"
-            android:textSize="14sp"
-            android:textColor="#666666"
+            android:text="저자"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingTop="2dp"
-            android:text="저자명"
-            android:visibility="gone" />
+            android:layout_height="wrap_content"/>
+
 
         <TextView
             android:id="@+id/textReadPage"
