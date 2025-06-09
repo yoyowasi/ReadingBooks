@@ -89,10 +89,13 @@ class MyLibraryActivity : AppCompatActivity() {
 
         btnSameAuthor.setOnClickListener {
             val firstBook = userBookList.firstOrNull()
-            val authorName = firstBook?.book?.author ?: run {
+            val authorName = firstBook?.book?.author // ← 안전 호출
+            
+            if (authorName.isNullOrBlank()) { // ← isNullOrBlank() 사용
                 Toast.makeText(this, "책 정보가 없습니다.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            
             val intent = Intent(this, SameAuthorActivity::class.java)
             intent.putExtra("AUTHOR_NAME", authorName)
             startActivity(intent)
@@ -129,6 +132,7 @@ class MyLibraryActivity : AppCompatActivity() {
         val btnSameAuthor = dialogView.findViewById<Button>(R.id.btnSameAuthor)
         val btnCancel = dialogView.findViewById<Button>(R.id.btnCancel)
 
+
         val dialog = AlertDialog.Builder(this)
             .setTitle("📖 ${userBook.book?.title ?: "책 제목 없음"}")
             .setView(dialogView)
@@ -161,6 +165,7 @@ class MyLibraryActivity : AppCompatActivity() {
         btnCancel.setOnClickListener {
             dialog.dismiss()
         }
+
 
         dialog.show()
     }
@@ -228,7 +233,9 @@ class MyLibraryActivity : AppCompatActivity() {
                 override fun onResponse(call: Call<List<UserBook>>, response: Response<List<UserBook>>) {
                     if (response.isSuccessful) {
                         val books = response.body() ?: emptyList()
+
                         val distinctBooks = books.distinctBy { it.isbn }
+
 
                         userBookList.clear()
                         userBookList.addAll(distinctBooks)

@@ -1,29 +1,48 @@
-<!-- res/layout/item_book.xml -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:fitsSystemWindows="true">
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:background="?attr/selectableItemBackground"
+    android:layout_marginBottom="8dp"
+    android:clickable="true"
+    android:focusable="true">
 
-    <TextView
-        android:id="@+id/textTitle"
-        android:text="책 제목"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <!-- 썸네일 이미지 -->
     <ImageView
         android:id="@+id/imageThumbnail"
         android:layout_width="60dp"
         android:layout_height="80dp"
         android:scaleType="centerCrop"
-        android:layout_marginBottom="8dp" />
-    <TextView
-        android:id="@+id/textAuthor"
-        android:text="저자"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:contentDescription="책 이미지"
+        android:layout_marginEnd="12dp" />
+
+    <!-- 텍스트 정보 묶음 -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/textTitle"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:textColor="#222222"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="책 제목" />
+
+        <TextView
+            android:id="@+id/textAuthor"
+            android:textSize="14sp"
+            android:textColor="#555555"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="4dp"
+            android:text="저자명" />
+
+    </LinearLayout>
 </LinearLayout>

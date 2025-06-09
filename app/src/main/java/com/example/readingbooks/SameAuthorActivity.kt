@@ -1,24 +1,32 @@
 package com.example.readingbooks
 
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
+
 import android.view.MenuItem
+
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.readingbooks.adapter.SearchResultAdapter
+
 import com.example.readingbooks.data.Book
 import com.example.readingbooks.data.BookInsertRequest
 import com.example.readingbooks.data.UserBookInsertRequest
 import com.example.readingbooks.data.api.NlRetrofitInstance
 import com.example.readingbooks.data.api.RetrofitInstance
+
 import com.example.readingbooks.data.api.SupabaseClient
 import com.example.readingbooks.data.model.BookDocument
 import com.example.readingbooks.data.model.BookSearchResponse
 import com.example.readingbooks.data.model.NlBookResponse
 import com.example.readingbooks.databinding.ActivitySameAuthorBooksBinding
 import com.example.readingbooks.viewmodel.BookViewModel
+
+
 import com.google.firebase.auth.FirebaseAuth
 import retrofit2.Call
 import retrofit2.Callback
@@ -37,18 +45,24 @@ class SameAuthorActivity : AppCompatActivity() {
         setContentView(binding.root)
 
 
+
         supportActionBar?.title = "동일 저자 도서"
+
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         bookViewModel = ViewModelProvider(this)[BookViewModel::class.java]
 
+
         val authorName = intent.getStringExtra("AUTHOR_NAME") ?: ""
 
-        binding.textSameAuthorTitle.text = if (authorName.isNotBlank()) {
-            "\"$authorName\" 저자의 책"
+
+        binding.textSameAuthorTitle.text = if (searchQuery.isNotBlank()) {
+            "\"$searchQuery\" 관련 책"
         } else {
-            "저자 정보 없음"
+            "검색 정보 없음"
         }
+
 
         adapter = SearchResultAdapter(searchResults) { selectedBook ->
             androidx.appcompat.app.AlertDialog.Builder(this)
@@ -59,18 +73,19 @@ class SameAuthorActivity : AppCompatActivity() {
                 }
                 .setNegativeButton("취소", null)
                 .show()
+
         }
 
         binding.recyclerSameAuthor.layoutManager = LinearLayoutManager(this)
         binding.recyclerSameAuthor.adapter = adapter
 
-        if (authorName.isBlank()) {
-            Toast.makeText(this, "저자 정보가 없습니다.", Toast.LENGTH_SHORT).show()
+        if (searchQuery.isBlank()) {
+            Toast.makeText(this, "검색 정보가 없습니다.", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
-        fetchBooksByAuthor(authorName)
+        fetchBooksByQuery(searchQuery)
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
@@ -81,6 +96,7 @@ class SameAuthorActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
+
 
 
     private fun fetchBooksByAuthor(author: String) {
@@ -123,11 +139,13 @@ class SameAuthorActivity : AppCompatActivity() {
 
         SupabaseClient.create().getUserBooksByUserId("eq.$uid")
             .enqueue(object : Callback<List<com.example.readingbooks.data.UserBook>> {
+
                 override fun onResponse(
                     call: Call<List<com.example.readingbooks.data.UserBook>>,
                     response: Response<List<com.example.readingbooks.data.UserBook>>
                 ) {
                     if (response.isSuccessful) {
+
                         val isbns = response.body()?.map { it.isbn }?.distinct() ?: emptyList()
                         onResult(isbns)
                     } else {

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -82,13 +83,16 @@ class MainActivity : AppCompatActivity() {
     private fun saveBookToSupabase(selectedBook: BookDocument) {
         val user = FirebaseAuth.getInstance().currentUser ?: return
         val uid = user.uid
-        val safeTitle = selectedBook.title.replace("&", "and").replace("(", "").replace(")", "")
 
         val isbn13 = extractIsbn13(selectedBook.isbn)
         if (isbn13 == null) {
             Log.e("❌ISBN", "ISBN-13을 추출할 수 없습니다: ${selectedBook.isbn}")
+            Toast.makeText(this, "❌ ISBN-13이 없어서 저장할 수 없습니다.", Toast.LENGTH_SHORT).show()
             return
         }
+
+        val safeTitle = selectedBook.title.replace("&", "and").replace("(", "").replace(")", "")
+        val author = selectedBook.authors.joinToString(", ").ifBlank { "저자 미상" }
 
         NlRetrofitInstance.api.getBookByIsbn(
             apiKey = "6bc9b1452d94118c24e99e8cf5af1ea00bfc2c87790e6bbc85d73f34eca709f6",
@@ -101,7 +105,7 @@ class MainActivity : AppCompatActivity() {
                 val bookRequest = BookInsertRequest(
                     isbn = isbn13,
                     title = safeTitle,
-                    author = selectedBook.authors.joinToString(", "),
+                    author = author,
                     publisher = selectedBook.publisher,
                     thumbnail = selectedBook.thumbnail,
                     page_count = pageCount
@@ -109,44 +113,28 @@ class MainActivity : AppCompatActivity() {
 
                 saveBookOrFetchExisting(bookRequest) { success, errorMessage ->
                     if (success) {
-                        SupabaseClient.create().getBookByIsbn("eq.$isbn13")
-                            .enqueue(object : Callback<List<Book>> {
-                                override fun onResponse(call: Call<List<Book>>, response: Response<List<Book>>) {
-                                    val bookList = response.body()
-                                    if (!bookList.isNullOrEmpty()) {
-                                        val bookId = bookList.first().id
-                                        Log.d("📦DEBUG", "bookId from books table: $bookId") // ✅ 로그 확인
+                        val userBookRequest = UserBookInsertRequest(
+                            user_id = uid,
+                            isbn = isbn13, // ❗ 무조건 ISBN-13로 저장
+                            review = "",
+                            read_page = 0
+                        )
 
-                                        val userBookRequest = UserBookInsertRequest(
-                                            user_id = uid,
-                                            isbn = isbn13,  // ✅ book_id 말고 isbn 사용!
-                                            review = "",
-                                            read_page = 0
-                                        )
-
-                                        SupabaseClient.create().insertUserBook(userBookRequest)
-                                            .enqueue(object : Callback<Void> {
-                                                override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                                                    if (response.isSuccessful) {
-                                                        Log.d("✅SUPABASE", "user_books 저장 완료")
-                                                    } else {
-                                                        Log.e("❌SUPABASE", "user_books 저장 실패: ${response.code()} ${response.errorBody()?.string()}")
-                                                    }
-                                                }
-
-                                                override fun onFailure(call: Call<Void>, t: Throwable) {
-                                                    Log.e("❌SUPABASE", "user_books 저장 실패: ${t.message}")
-                                                }
-                                            })
-
+                        SupabaseClient.create().insertUserBook(userBookRequest)
+                            .enqueue(object : Callback<Void> {
+                                override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                                    if (response.isSuccessful) {
+                                        Log.d("✅SUPABASE", "user_books 저장 완료")
                                     } else {
-                                        Log.e("❌SUPABASE", "book_id 조회 실패: isbn으로 책을 찾을 수 없음")
+                                        Log.e("❌SUPABASE", "user_books 저장 실패: ${response.code()} ${response.errorBody()?.string()}")
                                     }
                                 }
-                                override fun onFailure(call: Call<List<Book>>, t: Throwable) {
-                                    Log.e("❌SUPABASE", "book_id 조회 실패: ${t.message}")
+
+                                override fun onFailure(call: Call<Void>, t: Throwable) {
+                                    Log.e("❌SUPABASE", "user_books 저장 실패: ${t.message}")
                                 }
                             })
+
                     } else {
                         Log.e("❌SUPABASE", errorMessage ?: "책 저장 실패")
                     }
@@ -158,6 +146,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
+
 
     private fun saveBookOrFetchExisting(book: BookInsertRequest, onResult: (Boolean, String?) -> Unit) {
         SupabaseClient.create().insertBook(book).enqueue(object : Callback<Void> {
