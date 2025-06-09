@@ -26,6 +26,11 @@ class MyLibraryActivity : AppCompatActivity() {
     private lateinit var btnGoalSetting: Button
     private lateinit var textReadingProgress: TextView
 
+    private lateinit var textTotalBooks: TextView
+    private lateinit var textTotalPages: TextView
+    private lateinit var textTopAuthor: TextView
+
+
     private lateinit var adapter: UserBookAdapter
     private val userBookList = mutableListOf<UserBook>()
 
@@ -38,6 +43,10 @@ class MyLibraryActivity : AppCompatActivity() {
         btnSameAuthor = findViewById(R.id.btnSameAuthor)
         btnGoalSetting = findViewById(R.id.btnGoalSetting)
         textReadingProgress = findViewById(R.id.textReadingProgress)
+        textTotalBooks = findViewById(R.id.textTotalBooks)
+        textTotalPages = findViewById(R.id.textTotalPages)
+        textTopAuthor = findViewById(R.id.textTopAuthor)
+
 
         // 날짜 확인하여 하루마다 초기화
         val prefs = getSharedPreferences("reading_goal", MODE_PRIVATE)
@@ -190,6 +199,7 @@ class MyLibraryActivity : AppCompatActivity() {
         textReadingProgress.text = "오늘 목표 ${dailyGoal}쪽 중 ${totalRead}쪽 읽음"
     }
 
+
     private fun fetchBooks() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
@@ -203,6 +213,7 @@ class MyLibraryActivity : AppCompatActivity() {
                         userBookList.clear()
                         userBookList.addAll(distinctBooks)
                         adapter.notifyDataSetChanged()
+                        calculateReadingStats(distinctBooks)
                     } else {
                         Log.e("❌SUPABASE", "불러오기 실패: ${response.code()} ${response.errorBody()?.string()}")
                     }
@@ -213,4 +224,24 @@ class MyLibraryActivity : AppCompatActivity() {
                 }
             })
     }
+
+    private fun calculateReadingStats(userBooks: List<UserBook>) {
+        val totalBooks = userBooks.size
+        val totalPages = userBooks.map { it.read_page ?: 0 }.sum()
+
+
+        val topAuthor = userBooks
+            .mapNotNull { it.book?.author }
+            .groupingBy { it }
+            .eachCount()
+            .maxByOrNull { it.value }
+
+        val mostReadAuthor = topAuthor?.key ?: "없음"
+        val mostReadCount = topAuthor?.value ?: 0
+
+        textTotalBooks.text = "총 도서 수: $totalBooks"
+        textTotalPages.text = "총 읽은 페이지 수: $totalPages"
+        textTopAuthor.text = "가장 많이 읽은 저자: $mostReadAuthor ({$mostReadCount}권)"
+    }
+
 }
