@@ -9,6 +9,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:background="#FFFFFF"
+    android:layout_marginTop="24dp"
 >
 
     <EditText

@@ -62,7 +62,7 @@
             android:textSize="12sp"
             android:textColor="#999999"
             android:layout_marginTop="4dp"
-            android:text="💡 길게 눌러서 관련 도서 검색" />
+            android:text="길게 눌러서 관련 도서 검색" />
 
     </LinearLayout>
 </LinearLayout>

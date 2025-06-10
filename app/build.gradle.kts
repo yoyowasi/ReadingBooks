@@ -7,13 +7,14 @@ plugins {
 }
 
 android {
-    namespace = "com.example.readingbooks"
+    namespace = "com.minhyeok.readingbooks"
     compileSdk = 35
     viewBinding.isEnabled = true
 
 
+
     defaultConfig {
-        applicationId = "com.example.readingbooks"
+        applicationId = "com.minhyeok.readingbooks"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -29,6 +30,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
